@@ -70,15 +70,21 @@ public final class CodexReader {
         case .binaryNotInstalled, .notAuthenticated:
             return Result(snapshot: nil, probe: probe)
         case .authenticated(let sessionStart):
-            // Spike-pending: when the parser lands, replace this with a real
-            // tokens-used + window-start extraction. For now, if we have a
-            // session-start time, surface a time-remaining snapshot anyway —
-            // it's still useful and matches how Claude reads.
+            // 2026-06-21: each rollout file's events carry
+            // `payload.rate_limits.{primary,secondary}.used_percent + resets_at` —
+            // the EXACT numbers the Codex desktop app / `codex usage` displays.
+            // Read those directly; fall back to time-based proxy only if
+            // rollout files exist but contain no rate_limits yet (extremely
+            // unlikely — every server response writes them).
+            if let snapshot = makeSnapshotFromRateLimits(now: now) {
+                return Result(snapshot: snapshot, probe: probe)
+            }
+            // Fallback: time-based proxy. Honest about its limitations —
+            // see DESIGN.md and README "What works today".
             guard let sessionStart else {
                 return Result(snapshot: nil, probe: probe)
             }
-            let snapshot = makeTimeBasedSnapshot(sessionStart: sessionStart, now: now)
-            return Result(snapshot: snapshot, probe: probe)
+            return Result(snapshot: makeTimeBasedSnapshot(sessionStart: sessionStart, now: now), probe: probe)
         }
     }
 
@@ -122,32 +128,62 @@ public final class CodexReader {
         return true
     }
 
-    /// Spike-pending placeholder: scan `~/.codex/sessions/` for the most
-    /// recent session file and return its mtime. Once the spike confirms the
-    /// real JSON schema this becomes proper JSON parsing of session-start +
-    /// tokens-used.
+    /// Verified 2026-06-21 against real codex CLI install:
+    ///   - Session files live at `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`
+    ///     (3 levels deep, NOT flat — the original spike assumption was wrong)
+    ///   - Filename encodes the exact session start time:
+    ///     `rollout-2026-06-21T17-30-12-<uuid>.jsonl`
+    ///   - Using filename > using mtime: codex CLI silently touches old
+    ///     rollout files during background bookkeeping (an old June 11 file
+    ///     shows up with today's mtime). Filename parsing avoids that
+    ///     false-positive entirely.
+    ///
+    /// Returns the EARLIEST session start within the last 5h, treating that
+    /// as the start of the active session (matches Claude's same-semantic
+    /// fixed-window logic). Returns nil when no rollout file in window.
     private func detectSessionStart() -> Date? {
-        // TODO(spike): replace with real session-state parsing once the
-        // ~/.codex/sessions/ schema is documented (per /plan-eng-review D2,
-        // may study CodexBar source for the read pattern).
         let sessionsDir = codexDirectory.appendingPathComponent("sessions", isDirectory: true)
         guard fileManager.fileExists(atPath: sessionsDir.path) else { return nil }
-        let candidates = (try? fileManager.contentsOfDirectory(
-            at: sessionsDir,
-            includingPropertiesForKeys: [.contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-        var earliestRecent: Date? = nil
+
         let cutoff = Date().addingTimeInterval(-Self.sessionWindow)
-        for url in candidates {
-            guard let mtime = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?
-                .contentModificationDate else { continue }
-            guard mtime >= cutoff else { continue }
-            if earliestRecent == nil || mtime < earliestRecent! {
-                earliestRecent = mtime
+        var earliestRecent: Date? = nil
+
+        guard let enumerator = fileManager.enumerator(
+            at: sessionsDir,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else { return nil }
+
+        for case let url as URL in enumerator {
+            guard url.pathExtension == "jsonl" else { continue }
+            guard let start = Self.sessionStartFromFilename(url.lastPathComponent) else { continue }
+            guard start >= cutoff else { continue }
+            if earliestRecent == nil || start < earliestRecent! {
+                earliestRecent = start
             }
         }
         return earliestRecent
+    }
+
+    /// Parses `rollout-YYYY-MM-DDTHH-MM-SS-<uuid>.jsonl` filename into the
+    /// encoded session-start `Date`. Returns nil on any format deviation
+    /// (defensive — better to under-report than to surface garbage).
+    /// Internal-but-static so tests can hit it directly.
+    static func sessionStartFromFilename(_ filename: String) -> Date? {
+        guard filename.hasPrefix("rollout-"), filename.hasSuffix(".jsonl") else { return nil }
+        let stem = filename
+            .replacingOccurrences(of: ".jsonl", with: "")
+        let parts = stem.split(separator: "-")
+        // Expected layout: ["rollout", "YYYY", "MM", "DDTHH", "MM", "SS", "<uuid>", ...].
+        guard parts.count >= 7, parts[0] == "rollout" else { return nil }
+        let timestampString = parts[1...5].joined(separator: "-")
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH-mm-ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        // Filename uses local-clock timestamp without timezone marker, so
+        // interpret in current TZ.
+        formatter.timeZone = TimeZone.current
+        return formatter.date(from: timestampString)
     }
 
     private func makeTimeBasedSnapshot(sessionStart: Date, now: Date) -> UsageSnapshot {
@@ -160,6 +196,123 @@ public final class CodexReader {
             window: .sessionWindow5h,
             usedFraction: fraction,
             resetAt: sessionStart.addingTimeInterval(total)
+        )
+    }
+
+    // MARK: - Real rate_limits parsing (2026-06-21)
+
+    /// Returns the most-recent `rate_limits` block seen across all rollout
+    /// files (capped to N most-recent files by filename time). Returns nil
+    /// if no `payload.rate_limits` ever surfaces — extremely unlikely for a
+    /// codex CLI that has handled even one server response.
+    private func makeSnapshotFromRateLimits(now: Date) -> UsageSnapshot? {
+        let sessionsDir = codexDirectory.appendingPathComponent("sessions", isDirectory: true)
+        guard fileManager.fileExists(atPath: sessionsDir.path) else { return nil }
+
+        // Collect (url, start) pairs across the tree.
+        var candidates: [(URL, Date)] = []
+        guard let enumerator = fileManager.enumerator(
+            at: sessionsDir,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else { return nil }
+        for case let url as URL in enumerator {
+            guard url.pathExtension == "jsonl" else { continue }
+            guard let start = Self.sessionStartFromFilename(url.lastPathComponent) else { continue }
+            candidates.append((url, start))
+        }
+        // Latest first — the most recent rollout has the freshest rate_limits.
+        candidates.sort { $0.1 > $1.1 }
+
+        // Cap the scan: only look at up to 5 most-recent files. If the very
+        // newest file is empty mid-write or hasn't received a server response
+        // yet, we want to consult the prior session's last rate_limits.
+        for entry in candidates.prefix(5) {
+            if let limits = Self.lastRateLimits(in: entry.0) {
+                return Self.snapshot(from: limits, now: now)
+            }
+        }
+        return nil
+    }
+
+    /// Stream-parses a single rollout JSONL file line-by-line and returns
+    /// the LAST `payload.rate_limits` block encountered. Static + internal
+    /// so tests can hit it directly without instantiating CodexReader.
+    static func lastRateLimits(in url: URL) -> CodexRateLimits? {
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let text = String(data: data, encoding: .utf8) else { return nil }
+        var lastSeen: CodexRateLimits? = nil
+        for line in text.split(separator: "\n", omittingEmptySubsequences: true) {
+            guard let lineData = line.data(using: .utf8) else { continue }
+            guard let any = try? JSONSerialization.jsonObject(with: lineData) else { continue }
+            guard let event = any as? [String: Any],
+                  let payload = event["payload"] as? [String: Any],
+                  let rate = payload["rate_limits"] as? [String: Any] else { continue }
+            if let parsed = CodexRateLimits.from(rate) {
+                lastSeen = parsed
+            }
+        }
+        return lastSeen
+    }
+
+    /// Builds a `UsageSnapshot` from the primary (5h) rate-limit bucket.
+    /// Plan-type and secondary (weekly) are surfaced through the display
+    /// fields so the popover row can show "primary 30% • plus" with the
+    /// real plan tier from the server.
+    private static func snapshot(from limits: CodexRateLimits, now: Date) -> UsageSnapshot {
+        let fraction = max(0, min(1.0, limits.primaryUsedPercent / 100.0))
+        let usedInt = Int(limits.primaryUsedPercent.rounded())
+        let display = UsageDisplay(
+            used: "\(usedInt)%",
+            total: "100%",
+            unit: limits.planType ?? "codex"
+        )
+        return UsageSnapshot(
+            service: .codex,
+            readAt: now,
+            window: .sessionWindow5h,
+            usedFraction: fraction,
+            resetAt: limits.primaryResetsAt,
+            usageDisplay: display
+        )
+    }
+}
+
+// MARK: - Codex rate_limits schema
+
+/// Mirror of the `payload.rate_limits` object Codex CLI persists into every
+/// rollout JSONL event. Verified 2026-06-21 against the real codex install.
+public struct CodexRateLimits: Equatable {
+    public let primaryUsedPercent: Double
+    public let primaryWindowMinutes: Int
+    public let primaryResetsAt: Date
+    public let secondaryUsedPercent: Double
+    public let secondaryWindowMinutes: Int
+    public let secondaryResetsAt: Date
+    public let planType: String?
+
+    /// Tolerant decode — Codex may add new buckets later (e.g. `tertiary`,
+    /// `credits`). The two we need (`primary`, `secondary`) are required;
+    /// anything else is ignored.
+    static func from(_ dict: [String: Any]) -> CodexRateLimits? {
+        guard let primary = dict["primary"] as? [String: Any],
+              let primaryPct = (primary["used_percent"] as? NSNumber)?.doubleValue,
+              let primaryWindow = (primary["window_minutes"] as? NSNumber)?.intValue,
+              let primaryResetsAt = (primary["resets_at"] as? NSNumber)?.doubleValue else {
+            return nil
+        }
+        let secondary = (dict["secondary"] as? [String: Any]) ?? [:]
+        let secondaryPct = (secondary["used_percent"] as? NSNumber)?.doubleValue ?? 0
+        let secondaryWindow = (secondary["window_minutes"] as? NSNumber)?.intValue ?? 0
+        let secondaryResetsAt = (secondary["resets_at"] as? NSNumber)?.doubleValue ?? primaryResetsAt
+        return CodexRateLimits(
+            primaryUsedPercent: primaryPct,
+            primaryWindowMinutes: primaryWindow,
+            primaryResetsAt: Date(timeIntervalSince1970: primaryResetsAt),
+            secondaryUsedPercent: secondaryPct,
+            secondaryWindowMinutes: secondaryWindow,
+            secondaryResetsAt: Date(timeIntervalSince1970: secondaryResetsAt),
+            planType: dict["plan_type"] as? String
         )
     }
 }
