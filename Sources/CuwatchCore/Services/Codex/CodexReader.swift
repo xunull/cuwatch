@@ -54,6 +54,23 @@ public final class CodexReader {
     public let homeDirectory: URL
     private let fileManager: FileManager
 
+    /// Per-file cache keyed by absolute path string, valued by
+    /// `(mtime, size, parsedRateLimits)`.
+    ///
+    /// Why `String` (not `URL`)? `URL` equality compares `absoluteString`, and
+    /// `FileManager.enumerator(at:)`-returned URLs can have subtly different
+    /// representations from test-constructed URLs that point at the same file
+    /// (e.g. `/var/…` vs `/private/var/…` symlink resolution). String path is
+    /// the canonical form filesystem-side and lets the cache key match
+    /// regardless of how the URL was constructed.
+    ///
+    /// **Concurrency invariant**: exactly one `CodexReader` exists per
+    /// `AppDelegate`, polled by exactly one `BaseServiceMonitor<CodexReaderAdapter>`.
+    /// The cache is mutated only on that monitor's poll path — no shared-mutable
+    /// access. Future refactor that introduces a second reader/monitor MUST
+    /// add explicit synchronization or convert this to an `actor`.
+    private var rateLimitsCache: [String: CodexRateLimitsCacheEntry] = [:]
+
     public init(
         homeDirectory: URL? = nil,
         fileManager: FileManager = .default
@@ -228,12 +245,78 @@ public final class CodexReader {
         // newest file is empty mid-write or hasn't received a server response
         // yet, we want to consult the prior session's last rate_limits.
         for entry in candidates.prefix(5) {
-            if let limits = Self.lastRateLimits(in: entry.0) {
+            if let limits = cachedLastRateLimits(in: entry.0) {
                 return Self.snapshot(from: limits, now: now)
             }
         }
         return nil
     }
+
+    /// Cache-aware wrapper around `lastRateLimits(in:)`.
+    ///
+    /// Behavior:
+    /// - If the file's `(mtime, size)` matches a prior cache entry, return
+    ///   the cached parse result without any read.
+    /// - On mismatch (or first read), do the full read + parse, then update
+    ///   the cache with the new `(mtime, size, parsedRateLimits)` triple.
+    /// - On file deletion / unreadable attributes, evict the cache entry and
+    ///   return nil so the caller falls through to the next candidate.
+    ///
+    /// Returns the parsed `CodexRateLimits` or nil if the file has no
+    /// `rate_limits` line yet (mid-write, brand-new session, etc.). A nil
+    /// parse result IS cached — re-reading an empty file is just as wasteful
+    /// as re-reading one with data.
+    func cachedLastRateLimits(in url: URL) -> CodexRateLimits? {
+        // Use the symlink-resolved canonical path so URLs that point at the
+        // same file via different prefixes (e.g. `/var/…` vs `/private/var/…`
+        // on macOS, where `/var` is itself a symlink) hit the same cache
+        // entry. `FileManager.enumerator(at:)` returns symlink-resolved URLs,
+        // while caller-constructed URLs may not be — normalizing both with
+        // `resolvingSymlinksInPath` avoids the mismatch.
+        let key = (url.path as NSString).resolvingSymlinksInPath
+        // Fetch current mtime + size. Missing file or unreadable attributes
+        // mean the cache entry (if any) is stale.
+        let attrs: [FileAttributeKey: Any]
+        do {
+            attrs = try fileManager.attributesOfItem(atPath: key)
+        } catch {
+            rateLimitsCache.removeValue(forKey: key)
+            return nil
+        }
+        guard let mtime = attrs[.modificationDate] as? Date,
+              let size = (attrs[.size] as? NSNumber)?.intValue else {
+            rateLimitsCache.removeValue(forKey: key)
+            return nil
+        }
+
+        if let cached = rateLimitsCache[key],
+           cached.mtime == mtime,
+           cached.size == size {
+            return cached.lastRateLimits
+        }
+
+        // Miss → full read + parse. Cache the result regardless of whether
+        // we found rate_limits (a "no rate_limits in this file" answer is
+        // also worth caching).
+        fullReadCount += 1
+        let parsed = Self.lastRateLimits(in: url)
+        rateLimitsCache[key] = CodexRateLimitsCacheEntry(
+            mtime: mtime,
+            size: size,
+            lastRateLimits: parsed
+        )
+        return parsed
+    }
+
+    /// Test-only: number of files currently in the cache. Used to assert
+    /// invalidation behavior without exposing the dictionary itself.
+    var cacheCount: Int { rateLimitsCache.count }
+
+    /// Test-only: count of full-file reads (cache misses) since this reader
+    /// was instantiated. Lets tests assert "the second read was a cache hit,
+    /// not a re-read" — the public observable effect of the mtime cache.
+    /// Incremented inside `cachedLastRateLimits` on the miss branch only.
+    var fullReadCount: Int = 0
 
     /// Stream-parses a single rollout JSONL file line-by-line and returns
     /// the LAST `payload.rate_limits` block encountered. Static + internal
@@ -276,6 +359,20 @@ public final class CodexReader {
             usageDisplay: display
         )
     }
+}
+
+// MARK: - Cache entry
+
+/// One file's worth of cache state. Keyed by `URL` in `CodexReader.rateLimitsCache`.
+///
+/// `lastRateLimits` is optional because a file may exist on disk but not yet
+/// contain a `payload.rate_limits` block (brand-new session, mid-write
+/// rollout). Caching the nil answer is just as valuable as caching a parsed
+/// one — both prevent the next 30s-cadence poll from re-reading the file.
+struct CodexRateLimitsCacheEntry: Equatable {
+    let mtime: Date
+    let size: Int
+    let lastRateLimits: CodexRateLimits?
 }
 
 // MARK: - Codex rate_limits schema

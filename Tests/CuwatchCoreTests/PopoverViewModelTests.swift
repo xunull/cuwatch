@@ -1,6 +1,7 @@
 import XCTest
 @testable import CuwatchCore
 
+@MainActor
 final class PopoverViewModelTests: XCTestCase {
 
     private func snapshot(_ service: ServiceID, used: Double, at: Date = Date()) -> UsageSnapshot {
@@ -10,6 +11,17 @@ final class PopoverViewModelTests: XCTestCase {
             usedFraction: used,
             resetAt: at.addingTimeInterval(3600)
         )
+    }
+
+    /// Drain the main run loop. Required because `PopoverViewModel`'s sinks
+    /// now hop through `.receive(on: DispatchQueue.main)` (added 2026-06-25 to
+    /// fix the popover deadlock — see `docs/popover-deadlock-fix-plan.md`).
+    /// Without draining, a `store.publish(...)` only enqueues an async block
+    /// on the main queue; assertions that follow run before the block fires.
+    private func pumpMain() {
+        let exp = expectation(description: "main queue drained")
+        DispatchQueue.main.async { exp.fulfill() }
+        wait(for: [exp], timeout: 1.0)
     }
 
     // MARK: - Coalescer
@@ -33,6 +45,7 @@ final class PopoverViewModelTests: XCTestCase {
         )
         store.update(monitorState: .active(lastSuccessAt: Date()), for: .claude)
         store.publish(snapshot: snapshot(.claude, used:0.78))
+        pumpMain()  // drain sinks so schedulePendingFlush registers work
 
         // Update should still be pending. Multiple coalesced changes share a
         // single pending work item — that's the whole point of debounce.
@@ -58,6 +71,7 @@ final class PopoverViewModelTests: XCTestCase {
         store.publish(snapshot: snapshot(.claude, used:0.8))
         store.publish(snapshot: snapshot(.codex, used:0.65))
         store.publish(snapshot: snapshot(.minimax, used:0.41))
+        pumpMain()
 
         // Still pending before window elapses.
         XCTAssertTrue(vm.snapshots.isEmpty)
@@ -82,6 +96,7 @@ final class PopoverViewModelTests: XCTestCase {
 
         store.update(monitorState: .active(lastSuccessAt: Date()), for: .claude)
         store.publish(snapshot: snapshot(.claude, used:0.50))
+        pumpMain()
 
         // Advance partway through the debounce window.
         scheduler.advance(by: 0.3)
@@ -89,6 +104,7 @@ final class PopoverViewModelTests: XCTestCase {
 
         // Another change arrives — restarts the window.
         store.publish(snapshot: snapshot(.claude, used:0.45))
+        pumpMain()
         scheduler.advance(by: 0.3)
         // Still no flush because the second change reset the timer.
         XCTAssertTrue(vm.snapshots.isEmpty, "Window should have reset, not fired")
@@ -106,6 +122,7 @@ final class PopoverViewModelTests: XCTestCase {
         )
         store.update(monitorState: .active(lastSuccessAt: Date()), for: .claude)
         store.publish(snapshot: snapshot(.claude, used:0.55))
+        pumpMain()
 
         // Reduce Motion should publish without waiting on the scheduler.
         XCTAssertEqual(vm.snapshots[.claude]?.usedFraction ?? 0, 0.55, accuracy: 0.001)
@@ -121,6 +138,7 @@ final class PopoverViewModelTests: XCTestCase {
         store.update(monitorState: .active(lastSuccessAt: Date()), for: .codex)
         // 0.75 used → warn band (≥0.70, <0.90) → burntOrange.
         store.publish(snapshot: snapshot(.codex, used: 0.75))
+        pumpMain()
         XCTAssertTrue(vm.snapshots.isEmpty)
 
         vm.flushPendingForTesting()
@@ -138,6 +156,7 @@ final class PopoverViewModelTests: XCTestCase {
         store.update(monitorState: .active(lastSuccessAt: Date()), for: .claude)
         // Both should be pending and a single flush should publish them together.
         store.publish(snapshot: snapshot(.claude, used:0.7))
+        pumpMain()
 
         scheduler.advance(by: 0.6)
         if case .active = vm.monitorStates[.claude] {

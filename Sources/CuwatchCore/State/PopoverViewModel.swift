@@ -17,6 +17,14 @@ import Combine
 ///
 /// Pure value-type publication contract: the VM never mutates `StateStore`,
 /// it only re-publishes derived view state.
+///
+/// **Thread safety**: `@MainActor` since 2026-06-25 (plan #2). All
+/// state mutation runs on the main thread by type-system enforcement.
+/// The `.receive(on: DispatchQueue.main)` calls inside `init` are retained
+/// as defense in depth — if a future PR mistakenly removes `@MainActor`,
+/// the runtime hop still serializes mutation. Cost is zero when already
+/// on main (the hop is a no-op).
+@MainActor
 public final class PopoverViewModel: ObservableObject {
 
     // MARK: - Published view state
@@ -79,14 +87,30 @@ public final class PopoverViewModel: ObservableObject {
         )
 
         // Subscribe to upstream changes.
+        //
+        // `.receive(on: DispatchQueue.main)` is load-bearing: the three
+        // ServiceMonitors push @Published updates from cooperative-pool
+        // workers (see BaseServiceMonitor.scheduleNext closures). Without
+        // the hop, enqueue*/schedulePendingFlush runs on whichever cooperative
+        // worker fired the publisher, and `pendingFlushToken` (a plain
+        // ScheduledWork? stored prop) gets concurrently mutated by 2-3
+        // monitors. The resulting deinit of the old ScheduledWork on multiple
+        // threads has been observed to deadlock against Combine's internal
+        // unfair_lock + ObjC realizeIfNeeded (see docs/popover-deadlock-fix-plan.md).
+        //
+        // Even after PopoverViewModel becomes @MainActor (see plan #2), keep
+        // the explicit hop as defense in depth — a publisher already on main
+        // skips the hop, so runtime cost is zero.
         stateStore.$snapshots
             .dropFirst()       // already seeded
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] new in
                 self?.enqueueSnapshotChange(new)
             }
             .store(in: &cancellables)
         stateStore.$monitorStates
             .dropFirst()
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] new in
                 self?.enqueueMonitorStateChange(new)
             }

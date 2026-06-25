@@ -11,7 +11,12 @@ public final class CodexReaderAdapter: PollOutcomeProducing {
     }
 
     public func pollOnce(now: Date) async throws -> CodexReader.Result {
-        await Task.detached { [reader] in
+        // `priority: .utility` puts the read on a QoS-utility pool, not the
+        // user-initiated cooperative pool the rest of the monitor pipeline
+        // shares. Cache-miss reads can hit ~50MB JSONL files; keeping that
+        // off the cooperative pool ensures Claude/Minimax monitors aren't
+        // starved if Codex hits a slow disk. See plan #3b.
+        await Task.detached(priority: .utility) { [reader] in
             reader.read(now: now)
         }.value
     }
