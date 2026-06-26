@@ -1,7 +1,9 @@
 {
   "sourceLanguage" : "en",
-  "version" : "1.0",
   "strings" : {
+    "—" : {
+
+    },
     "‹ BACK" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13,13 +15,200 @@
         }
       }
     },
-    "PREFERENCES" : {
+    "Active days" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "偏好设置"
+            "value" : "活跃天数"
+          }
+        }
+      }
+    },
+    "ADD TOKEN" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加 Token"
+          }
+        }
+      }
+    },
+    "Behavior" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "行为"
+          }
+        }
+      }
+    },
+    "CANCEL" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "Claude needs Full Disk Access" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude 需要完全磁盘访问权限"
+          }
+        }
+      }
+    },
+    "CLEAR HISTORY" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除历史"
+          }
+        }
+      }
+    },
+    "CODEX · LOGBOOK" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CODEX · 记录簿"
+          }
+        }
+      }
+    },
+    "Codex.app shows cross-device aggregates that won't match." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codex.app 显示的是跨设备聚合，数字会不一样。"
+          }
+        }
+      }
+    },
+    "Cumulative tokens" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计 Token"
+          }
+        }
+      }
+    },
+    "cuwatch reads your local Claude Code usage from ~/.claude/projects/ — macOS requires explicit permission." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cuwatch 从 ~/.claude/projects/ 读取本机 Claude Code 使用数据 —— macOS 需要明确授权。"
+          }
+        }
+      }
+    },
+    "Data & Privacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据与隐私"
+          }
+        }
+      }
+    },
+    "DELETE" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除"
+          }
+        }
+      }
+    },
+    "Delete cuwatch history?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除 cuwatch 历史？"
+          }
+        }
+      }
+    },
+    "ENDPOINT" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务端点"
+          }
+        }
+      }
+    },
+    "English" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        }
+      }
+    },
+    "Filesystem" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件系统"
+          }
+        }
+      }
+    },
+    "Frequent polls may impact battery life." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "频繁轮询会影响电池续航。"
+          }
+        }
+      }
+    },
+    "LANGUAGE" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言"
           }
         }
       }
@@ -35,7 +224,123 @@
         }
       }
     },
+    "Longest streak · current streak" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最长连续 · 当前连续"
+          }
+        }
+      }
+    },
+    "MAIN SERVICE" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主服务"
+          }
+        }
+      }
+    },
+    "MINIMAX" : {
+
+    },
+    "mxp_…" : {
+
+    },
+    "No Codex activity on this Mac yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机上还没有 Codex 活动"
+          }
+        }
+      }
+    },
+    "No data yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无数据"
+          }
+        }
+      }
+    },
+    "OPEN APPLICATION SUPPORT" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开应用支持目录"
+          }
+        }
+      }
+    },
+    "OPEN SYSTEM SETTINGS" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开系统设置"
+          }
+        }
+      }
+    },
+    "Paste your Minimax Bearer token (starts with mxp_...)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴你的 Minimax Bearer token（以 mxp_ 开头）"
+          }
+        }
+      }
+    },
+    "Peak tokens · single thread" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "峰值 Token · 单 Thread"
+          }
+        }
+      }
+    },
+    "POLL EVERY" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轮询间隔"
+          }
+        }
+      }
+    },
     "Preferences" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偏好设置"
+          }
+        }
+      }
+    },
+    "PREFERENCES" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
@@ -53,204 +358,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "退出"
-          }
-        }
-      }
-    },
-    "Updated just now" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "刚刚更新"
-          }
-        }
-      }
-    },
-    "Updated %ds ago" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d s 前更新"
-          }
-        }
-      }
-    },
-    "Updated %dm ago" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d m 前更新"
-          }
-        }
-      }
-    },
-    "No data yet" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无数据"
-          }
-        }
-      }
-    },
-    "CODEX · LOGBOOK" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CODEX · 记录簿"
-          }
-        }
-      }
-    },
-    "Cumulative tokens" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "累计 Token"
-          }
-        }
-      }
-    },
-    "Peak tokens · single thread" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "峰值 Token · 单 Thread"
-          }
-        }
-      }
-    },
-    "Active days" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "活跃天数"
-          }
-        }
-      }
-    },
-    "Longest streak · current streak" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最长连续 · 当前连续"
-          }
-        }
-      }
-    },
-    "Since %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自 %@ 起"
-          }
-        }
-      }
-    },
-    "No Codex activity on this Mac yet" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本机上还没有 Codex 活动"
-          }
-        }
-      }
-    },
-    "Run `codex` or open Codex.app to start filling the logbook." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "运行 `codex` 或打开 Codex.app 开始填充记录簿。"
-          }
-        }
-      }
-    },
-    "This Mac · this account · CLI + Codex.app" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本机 · 此账号 · CLI + Codex.app"
-          }
-        }
-      }
-    },
-    "Codex.app shows cross-device aggregates that won't match." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Codex.app 显示的是跨设备聚合，数字会不一样。"
-          }
-        }
-      }
-    },
-    "Services" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "服务"
-          }
-        }
-      }
-    },
-    "Behavior" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "行为"
-          }
-        }
-      }
-    },
-    "Data & Privacy" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "数据与隐私"
-          }
-        }
-      }
-    },
-    "Filesystem" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文件系统"
           }
         }
       }
@@ -277,17 +384,6 @@
         }
       }
     },
-    "REPLACE" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "替换"
-          }
-        }
-      }
-    },
     "REMOVE" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -299,101 +395,13 @@
         }
       }
     },
-    "ADD TOKEN" : {
+    "REPLACE" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加 Token"
-          }
-        }
-      }
-    },
-    "Paste your Minimax Bearer token (starts with mxp_...)" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "粘贴你的 Minimax Bearer token（以 mxp_ 开头）"
-          }
-        }
-      }
-    },
-    "SAVE" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存"
-          }
-        }
-      }
-    },
-    "CANCEL" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取消"
-          }
-        }
-      }
-    },
-    "DELETE" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除"
-          }
-        }
-      }
-    },
-    "ENDPOINT" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "服务端点"
-          }
-        }
-      }
-    },
-    "POLL EVERY" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "轮询间隔"
-          }
-        }
-      }
-    },
-    "Frequent polls may impact battery life." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "频繁轮询会影响电池续航。"
-          }
-        }
-      }
-    },
-    "MAIN SERVICE" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主服务"
+            "value" : "替换"
           }
         }
       }
@@ -409,46 +417,46 @@
         }
       }
     },
-    "Delete cuwatch history?" : {
+    "Run `codex` or open Codex.app to start filling the logbook." : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "删除 cuwatch 历史？"
+            "value" : "运行 `codex` 或打开 Codex.app 开始填充记录簿。"
           }
         }
       }
     },
-    "CLEAR HISTORY" : {
+    "SAVE" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清除历史"
+            "value" : "保存"
           }
         }
       }
     },
-    "OPEN APPLICATION SUPPORT" : {
+    "Services" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开应用支持目录"
+            "value" : "服务"
           }
         }
       }
     },
-    "LANGUAGE" : {
+    "Since %@" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "语言"
+            "value" : "自 %@ 起"
           }
         }
       }
@@ -464,16 +472,58 @@
         }
       }
     },
-    "English" : {
+    "This Mac · this account · CLI + Codex.app" : {
       "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "English"
+            "value" : "本机 · 此账号 · CLI + Codex.app"
           }
         }
       }
+    },
+    "Updated %dm ago" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d m 前更新"
+          }
+        }
+      }
+    },
+    "Updated %ds ago" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d s 前更新"
+          }
+        }
+      }
+    },
+    "Updated %lldm ago" : {
+
+    },
+    "Updated %llds ago" : {
+
+    },
+    "Updated just now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刚刚更新"
+          }
+        }
+      }
+    },
+    "WHY?" : {
+
     },
     "简体中文" : {
       "extractionState" : "manual",
@@ -485,28 +535,7 @@
           }
         }
       }
-    },
-    "Claude needs Full Disk Access" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude 需要完全磁盘访问权限"
-          }
-        }
-      }
-    },
-    "cuwatch reads your local Claude Code usage from ~/.claude/projects/ — macOS requires explicit permission." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "cuwatch 从 ~/.claude/projects/ 读取本机 Claude Code 使用数据 —— macOS 需要明确授权。"
-          }
-        }
-      }
     }
-  }
+  },
+  "version" : "1.0"
 }
