@@ -223,6 +223,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configurePopover() {
         popover.behavior = .transient
         popover.animates = true
+        // Locale injection bridge: an ObservableObject computed view of the
+        // preferences store's languagePreference. When the user changes the
+        // picker, `preferencesStore.languagePreference` updates, which
+        // republishes `effectiveLocale`, which `LocaleEnvironmentBridge`
+        // observes and re-applies via `.environment(\.locale, ...)`. Result:
+        // all SwiftUI views in the popover re-render in the chosen language
+        // without an app restart.
         let shell = PopoverShell(
             dashboardViewModel: popoverViewModel,
             preferencesViewModel: preferencesViewModel,
@@ -231,7 +238,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             onOpenReadmePrivacy: { [weak self] in self?.openPrivacyReadme() },
             loadLogbook: { [weak self] in self?.codexLogbookReader.read() }
         )
-        let hosting = NSHostingController(rootView: shell)
+        let localized = LocaleBridge(preferencesStore: preferencesStore, content: shell)
+        let hosting = NSHostingController(rootView: localized)
         hosting.view.frame = NSRect(
             x: 0, y: 0,
             width: Tokens.Layout.popoverWidth, height: 440

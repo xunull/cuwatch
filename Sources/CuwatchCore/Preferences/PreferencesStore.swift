@@ -24,6 +24,7 @@ public final class PreferencesStore: ObservableObject {
         public static let pollIntervalSeconds = "cuwatch.poll.interval_seconds"
         public static let historyRetentionDays = "cuwatch.history.retention_days"
         public static let mainServiceLock = "cuwatch.main_service.lock"
+        public static let languagePreference = "cuwatch.language.preference"
     }
 
     public enum Defaults {
@@ -31,6 +32,7 @@ public final class PreferencesStore: ObservableObject {
         public static let pollIntervalSeconds: TimeInterval = Tokens.Polling.defaultIntervalSeconds
         public static let historyRetentionDays: Int = 30
         public static let mainServiceLock: MainServiceLock = .auto
+        public static let languagePreference: LanguagePreference = .system
     }
 
     /// Allowed history retention buckets shown in the picker.
@@ -78,6 +80,30 @@ public final class PreferencesStore: ObservableObject {
         }
     }
 
+    /// UI language preference. `.system` follows the macOS preferred locale.
+    /// `.en` / `.zhHans` force the corresponding locale regardless of system.
+    /// Drives `effectiveLocale`, which `AppDelegate` injects into the SwiftUI
+    /// environment for live switching (no restart). Added 2026-06-26 i18n.
+    @Published public var languagePreference: LanguagePreference {
+        didSet {
+            guard languagePreference != oldValue else { return }
+            userDefaults.set(languagePreference.rawValue, forKey: Keys.languagePreference)
+        }
+    }
+
+    /// Locale to inject into the SwiftUI environment. `.system` → returns the
+    /// process's current locale; explicit choices return a fresh `Locale`.
+    public var effectiveLocale: Locale {
+        switch languagePreference {
+        case .system:
+            return Locale.current
+        case .en:
+            return Locale(identifier: "en")
+        case .zhHans:
+            return Locale(identifier: "zh-Hans")
+        }
+    }
+
     public let userDefaults: UserDefaults
 
     public init(userDefaults: UserDefaults = .standard) {
@@ -115,6 +141,14 @@ public final class PreferencesStore: ObservableObject {
         } else {
             self.mainServiceLock = Defaults.mainServiceLock
         }
+
+        // Language preference.
+        if let raw = userDefaults.string(forKey: Keys.languagePreference),
+           let value = LanguagePreference(rawValue: raw) {
+            self.languagePreference = value
+        } else {
+            self.languagePreference = Defaults.languagePreference
+        }
     }
 
     // MARK: - Reset
@@ -127,10 +161,12 @@ public final class PreferencesStore: ObservableObject {
         userDefaults.removeObject(forKey: Keys.pollIntervalSeconds)
         userDefaults.removeObject(forKey: Keys.historyRetentionDays)
         userDefaults.removeObject(forKey: Keys.mainServiceLock)
+        userDefaults.removeObject(forKey: Keys.languagePreference)
         minimaxEndpoint = Defaults.minimaxEndpoint
         pollIntervalSeconds = Defaults.pollIntervalSeconds
         historyRetentionDays = Defaults.historyRetentionDays
         mainServiceLock = Defaults.mainServiceLock
+        languagePreference = Defaults.languagePreference
     }
 
     // MARK: - Helpers
@@ -180,4 +216,13 @@ public enum MainServiceLock: String, CaseIterable, Equatable, Sendable, Codable 
         case .minimax: return "Minimax"
         }
     }
+}
+
+/// UI language preference. `.system` = follow macOS preferred locale.
+/// `.en` / `.zhHans` = force the corresponding locale regardless of system.
+/// Added 2026-06-26 i18n. See `docs/i18n-zh-hans-design.md`.
+public enum LanguagePreference: String, CaseIterable, Equatable, Sendable, Codable {
+    case system
+    case en
+    case zhHans = "zh-Hans"
 }

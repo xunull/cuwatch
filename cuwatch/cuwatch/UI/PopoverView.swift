@@ -254,12 +254,16 @@ struct PopoverView: View {
 
     private var footerStatus: String {
         let latest = viewModel.snapshots.values.map(\.readAt).max()
-        guard let latest else { return "No data yet" }
+        guard let latest else { return String(localized: "No data yet") }
         let elapsed = Int(Date().timeIntervalSince(latest))
-        if elapsed < 5 { return "Updated just now" }
-        if elapsed < 60 { return "Updated \(elapsed)s ago" }
+        if elapsed < 5 { return String(localized: "Updated just now") }
+        if elapsed < 60 {
+            // `%d` interpolation key in the catalog: "Updated %ds ago".
+            // Swift 5.7+ folds `\(elapsed)s` into `%ds` for the catalog lookup.
+            return String(localized: "Updated \(elapsed)s ago")
+        }
         let mins = elapsed / 60
-        return "Updated \(mins)m ago"
+        return String(localized: "Updated \(mins)m ago")
     }
 
     // MARK: - Hairline

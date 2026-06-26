@@ -227,6 +227,37 @@ struct PreferencesView: View {
             sectionHeader("Behavior")
             pollIntervalRow
             mainServiceLockRow
+            languageRow
+        }
+    }
+
+    /// Language picker — added 2026-06-26 i18n. Three options: follow the
+    /// macOS system locale, force English, force Simplified Chinese.
+    private var languageRow: some View {
+        HStack {
+            Text("LANGUAGE")
+                .labelStyle()
+                .foregroundColor(palette.inkMute)
+            Spacer()
+            ForEach(LanguagePreference.allCases, id: \.self) { option in
+                Button(languageShortLabel(option)) {
+                    viewModel.setLanguagePreference(option)
+                }
+                .buttonStyle(.plain)
+                .font(PopoverFont.value())
+                .foregroundColor(
+                    viewModel.store.languagePreference == option ? palette.brass : palette.inkDim
+                )
+            }
+        }
+        .padding(.vertical, Tokens.Space.s4)
+    }
+
+    private func languageShortLabel(_ p: LanguagePreference) -> String {
+        switch p {
+        case .system: return String(localized: "System")
+        case .en:     return "English"
+        case .zhHans: return "简体中文"
         }
     }
 

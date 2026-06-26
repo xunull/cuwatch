@@ -268,3 +268,34 @@ direction are intentional reactions to the SaaS-template look that dominates
 the category. None of the existing menu bar utilities (Stats, ClaudeBar,
 SessionWatcher, CodexBar, iStat Menus) provided design inspiration — they
 provided the negative space cuwatch is trying to differentiate against.
+
+Bundles [**Sarasa Mono SC**](https://github.com/be5invis/Sarasa-Gothic)
+by Belleve Invis, licensed under
+[SIL Open Font License 1.1](./LICENSE-FONTS-OFL-1.1.txt). Sarasa Mono SC
+is a true 1:2 CJK + Latin monospace font built from Inter, Iosevka, and
+Source Han Sans. cuwatch ships it as the bundle's typeface so labels in
+Chinese, English, and digits all share the same monospaced design language —
+no fallback to a proportional CJK font, no broken `tabular-figures` alignment.
+
+## i18n / 语言
+
+cuwatch supports English and Simplified Chinese (added 2026-06-26 in v0.1).
+Switch from **Preferences → Language**: System / English / 简体中文. Default
+is "System" (follows the macOS preferred language). Changes apply live, no
+restart needed.
+
+Number formats (`5.05B`, `88%`, `2h 14m`), proper nouns
+(`CLAUDE` / `CODEX` / `MINIMAX`), and technical terms (`Token`, `CLI`,
+`JSONL`) stay English under both locales — the wedge's instrument language
+is universal.
+
+cuwatch 支持英文和简体中文（v0.1 起，2026-06-26 添加）。在
+**偏好设置 → 语言** 切换：跟随系统 / English / 简体中文。默认值是"跟随系统"。
+切换立刻生效，无需重启。
+
+数字格式（`5.05B`、`88%`、`2h 14m`）、专有名词（`CLAUDE` / `CODEX` /
+`MINIMAX`）和技术术语（`Token`、`CLI`、`JSONL`）在两种语言下都保留英文 ——
+仪表盘语言对工程师是通用的。
+
+See [`docs/i18n-zh-hans-design.md`](./docs/i18n-zh-hans-design.md) for
+the full design rationale.

@@ -93,6 +93,12 @@ public final class PreferencesViewModel: ObservableObject {
         store.mainServiceLock = lock
     }
 
+    // MARK: - Language
+
+    public func setLanguagePreference(_ pref: LanguagePreference) {
+        store.languagePreference = pref
+    }
+
     // MARK: - History
 
     public func setHistoryRetentionDays(_ days: Int) {
