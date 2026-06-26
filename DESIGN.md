@@ -1,7 +1,8 @@
 # Design System — cuwatch
 
 Created by `/design-consultation` on 2026-06-12.
-Memorable anchor: **"This menu bar app is a meter."**
+Memorable anchor: **"A meter at a glance, a logbook at a click."**
+(2026-06-26 anchor evolution; see Decisions Log. Original: "This menu bar app is a meter.")
 
 > Semantic note (2026-06-21 reversal logged in `decisions.active.json`): the dial reports **usage**, not remaining — needle climbs as you spend, mirroring Claude / Minimax vendor dashboards. The 1960s analog instrument aesthetic still holds; the metaphor is a tachometer / pressure meter, not a fuel gauge. Color ladder: brass < 70% used, burnt orange 70-90%, oxidized red ≥ 90%.
 Wedge: **The AI usage tracker that refuses to look like an AI tool.**
@@ -118,8 +119,9 @@ Wedge: **The AI usage tracker that refuses to look like an AI tool.**
 - **Popover composition (top to bottom):**
   1. **Header (~80pt tall)** — left: 34pt main readout `display` + 10pt brass label `xs uppercase`. Right: 48px dial replica.
   2. **Three service rows (56pt each, separated by `s-16`)** — each row: 10pt uppercase label `xs`, 6pt-tall horizontal progress bar with ghost line beneath, percentage + reset meta right-aligned in tabular mono.
-  3. **Footer** — 11pt dim text: "Updated 14s ago / Preferences"
+  3. **Footer** — 11pt dim text: "Updated 14s ago / Logbook / Preferences"
 - **Menu bar icon canvas:** 16×16pt template canvas. Custom NSView with CALayer for the dial arc + needle.
+- **Logbook slide-in panel (2026-06-26):** 340pt wide, slides in from right with the same 200ms motion as the Preferences panel. Triggered by the "Logbook" footer link. v0.1 surfaces Codex only (Claude / Minimax reserved for v1.1+). Layout follows the same type scale and color tokens as the main popover; uses `display` (34pt) for the headline number, `xl` (22pt) for the secondary readouts, `xs` uppercase labels above each number, hairline separator before the footer disclosure. Plain numbers and labels only — see Anti-list below.
 
 ### What is NOT allowed in the popover
 
@@ -129,6 +131,15 @@ Wedge: **The AI usage tracker that refuses to look like an AI tool.**
 - More than one accent color at once
 - More than one font weight per text style
 - Centered headlines or hero copy
+
+### What is NOT allowed in the logbook (added 2026-06-26)
+
+- Charts, sparklines, time-series visualizations (anything that turns numbers into pictures)
+- Bar graphs, donut charts, heatmaps
+- Trend arrows (↑ 12% style)
+- Streak flame icons or any motivational ornament
+- "Last 7 days" / "Last 30 days" tabs or pickers (logbook shows cumulative-since-first-use only in v0.1)
+- Plain numbers + uppercase labels only, in the locked type scale. The logbook is a logbook, not a dashboard.
 
 ## Motion
 
@@ -163,6 +174,7 @@ Wedge: **The AI usage tracker that refuses to look like an AI tool.**
 | 2026-06-13 | Preferences form factor: in-popover slide-in panel | Per /plan-design-review D4. 340pt wide, slides 200ms from right, three sections (Services / Behavior / Data & Privacy). Preserves instrument anchor — no separate window. |
 | 2026-06-21 | **Anchor reversal: "gauge" → "meter"; dial semantics: remaining → used.** Color ladder: green < 70% used, yellow 70-90%, red ≥ 90%. | After ⌘R verifying against real data, every vendor dashboard (Claude.ai, Minimax console, ccusage) displays USED, not remaining. Cross-referencing with cuwatch required mental flip. Tachometer / pressure-meter family preserves 1960s analog aesthetic and damped-spring-with-overshoot motion language — only the polarity flipped. Per /plan-eng-review 2026-06-21 D-reversal. Touched 11 files, 178 tests pass. Earlier 2026-06-12 "gauge" entries above record the original framing and are kept for historical trail. |
 | 2026-06-21 | **Typography reversal: IBM Plex Mono (bundled OTF) → system monospaced design font (SF Mono on macOS 13+, Menlo on older).** | User call: "就使用 SF Mono 这个字体吧，不要搞特殊". At 10-13pt sizes (the menu bar surface that dominates the wedge), Plex Mono and SF Mono are visually indistinguishable; the wedge cost is paid only at 22/34pt readouts. Accept the small differentiation loss for: zero bundle weight (was ~500KB-1MB for two OTF weights), no font registration code at launch, no SIL OFL attribution overhead, native Apple rendering at all sizes. The 2026-06-12 "IBM Plex Mono OSS" entry above records the original choice and is kept for historical trail. Anti-list updated: SF Mono and Menlo are now allowed; Inter / Roboto / Arial / Helvetica / SF Pro / system-ui still excluded. |
+| 2026-06-26 | **Anchor evolution: "meter" → "meter at a glance, logbook at a click."** Added a Logbook slide-in panel (right side, 340pt wide, 200ms motion — same as Preferences). v0.1 surfaces Codex only: cumulative tokens, peak thread tokens, active days, current streak, longest streak. All values pulled from `~/.codex/state_5.sqlite::threads`. Numbers and labels only — no charts, sparklines, trend arrows, or motivational ornament (see Anti-list). | Originally the anchor was strict "meter" — a single gauge with no historical depth. Codex.app exposes its own historical aggregates (cumulative / peak / streak) and users want a similar surface in cuwatch without leaving the menu bar. README v1.1 roadmap already named "trend history" so this is acceleration, not feature creep. "Logbook" is the chosen frame because it's a craftsman word (logbook is something **you** write — the cuwatch user is the one whose work is being recorded), keeping the wedge against SaaS dashboard language. Three-service symmetry deferred — Claude / Minimax logbook reserved for v1.1+ given Codex was the original motivation. Anti-list extended with chart/sparkline/dashboard ornament rules to prevent the logbook from drifting into SaaS territory. The original 2026-06-12 entries stay above as historical record. |
 
 ## Implementation Notes (for the AppKit + SwiftUI build)
 
@@ -175,4 +187,4 @@ Wedge: **The AI usage tracker that refuses to look like an AI tool.**
 
 ## Living Document
 
-This file is the source of truth for cuwatch visual decisions. Update the Decisions Log when adding/changing anything. Never deviate without explicit user approval. The wedge depends on every decision serving the **meter** anchor (anchor was "gauge" through 2026-06-13; reversed 2026-06-21 — see Decisions Log).
+This file is the source of truth for cuwatch visual decisions. Update the Decisions Log when adding/changing anything. Never deviate without explicit user approval. The wedge depends on every decision serving the **meter + logbook** anchor (anchor was "gauge" through 2026-06-13; reversed to "meter" 2026-06-21; extended to "meter + logbook" 2026-06-26 — see Decisions Log).

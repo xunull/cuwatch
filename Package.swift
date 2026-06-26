@@ -21,7 +21,13 @@ let package = Package(
         .target(
             name: "CuwatchCore",
             path: "Sources/CuwatchCore",
-            resources: []
+            resources: [],
+            linkerSettings: [
+                // SQLite3 ships with macOS — used by CodexLogbookReader to
+                // read `~/.codex/state_5.sqlite` for the Logbook panel.
+                // Keeps the "no third-party deps" promise (system framework only).
+                .linkedLibrary("sqlite3")
+            ]
         ),
         .testTarget(
             name: "CuwatchCoreTests",

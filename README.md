@@ -79,10 +79,25 @@ If you need a single number you can trust, watch the Minimax row.
 - **Single dial in the menu bar** with damped-spring needle (4° overshoot,
   280ms settle). Color ladder: brass `<70%` used, burnt orange `70-90%`,
   oxidized red `≥90%`. Respects Reduce Motion.
-- **Popover dashboard** with header readout, three service rows, slide-in
-  Preferences panel for Minimax token + endpoint + polling cadence.
+- **Popover dashboard** with header readout, three service rows, two
+  slide-in panels (Preferences + Logbook).
+- **Codex Logbook** (added 2026-06-26) — slide-in panel from the popover
+  footer showing aggregated Codex stats for this Mac:
+  - Cumulative tokens (sum of `threads.tokens_used`)
+  - Peak tokens per single thread
+  - Active days / total calendar days (since first use)
+  - Longest streak · current streak (consecutive active calendar days)
+
+  Sourced from `~/.codex/state_5.sqlite` (shared between codex CLI and
+  Codex.app, both write live). **NOT cross-device aggregates** — Codex.app
+  UI shows different numbers because it pulls from OpenAI's server-side
+  account-level totals. cuwatch shows what happened on this Mac, this
+  account, real-time. See [`docs/codex-logbook-design.md`](./docs/codex-logbook-design.md)
+  for the full design rationale.
+
+  Anchor evolved 2026-06-26: **"A meter at a glance, a logbook at a click."**
 - **Right-click menu bar** → Quit + Open. **Left-click** → popover.
-  **Cmd+,** → Preferences. **Cmd+Q** → quit.
+  **Cmd+L** → Logbook. **Cmd+,** → Preferences. **Cmd+Q** → quit.
 
 ## What doesn't work yet
 

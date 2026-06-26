@@ -15,6 +15,7 @@ struct PopoverView: View {
 
     @ObservedObject var viewModel: PopoverViewModel
     var onOpenPreferences: () -> Void = {}
+    var onOpenLogbook: () -> Void = {}
     var onGrantFDA: () -> Void = {}
     var onOpenCodexSetup: () -> Void = {}
     var onOpenReadmePrivacy: () -> Void = {}
@@ -209,6 +210,19 @@ struct PopoverView: View {
                 .font(PopoverFont.meta())
                 .foregroundColor(palette.inkDim)
             Spacer()
+            Button("Logbook") {
+                onOpenLogbook()
+            }
+            .buttonStyle(.plain)
+            .font(PopoverFont.meta())
+            .foregroundColor(palette.inkDim)
+            .keyboardShortcut("l", modifiers: .command)
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(palette.inkDim.opacity(0.5))
+                    .frame(height: 0.5)
+                    .offset(y: 1)
+            }
             Button("Preferences") {
                 onOpenPreferences()
             }

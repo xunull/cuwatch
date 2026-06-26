@@ -54,6 +54,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var codexMonitor: BaseServiceMonitor<CodexReaderAdapter>?
     private var minimaxMonitor: BaseServiceMonitor<MinimaxReaderAdapter>?
 
+    /// Reads the Codex Logbook from `~/.codex/state_5.sqlite` on demand.
+    /// Owned here so the SQLite open/close stays per-popover-open rather
+    /// than held across the app's lifetime. See docs/codex-logbook-design.md.
+    private let codexLogbookReader = CodexLogbookReader()
+
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -223,7 +228,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             preferencesViewModel: preferencesViewModel,
             onGrantFDA: { [weak self] in self?.openFDASystemSettings() },
             onOpenCodexSetup: { [weak self] in self?.openCodexSetupReadme() },
-            onOpenReadmePrivacy: { [weak self] in self?.openPrivacyReadme() }
+            onOpenReadmePrivacy: { [weak self] in self?.openPrivacyReadme() },
+            loadLogbook: { [weak self] in self?.codexLogbookReader.read() }
         )
         let hosting = NSHostingController(rootView: shell)
         hosting.view.frame = NSRect(
